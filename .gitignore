@@ -2,6 +2,8 @@
 node_modules/
 .pnp
 .pnp.js
+bun.lock*
+
 
 # Production build outputs
 dist/
@@ -20,6 +22,8 @@ out/
 # Persistent local workflow runtime data
 server/data/workflows.json
 server/data/activity.json
+server/data/*.tar.gz
+*.tmp
 !server/data/.gitkeep
 
 # Logs and debug files

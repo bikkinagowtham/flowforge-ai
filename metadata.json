@@ -1,0 +1,8 @@
+{
+  "name": "FlowForge AI",
+  "description": "Intelligent Workflow Execution & Empirical Verification Platform powered by NVIDIA Nemotron and Nebius Token Factory.",
+  "permissions": [],
+  "capabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import path from 'path';
 import fs from 'fs';
+import { execSync } from 'child_process';
 import { fileURLToPath } from 'url';
 import type { Workflow, WorkflowStep, ActivityEvent, SystemStatus, ModelInfo } from './src/types/workflow.js';
 
@@ -929,6 +930,115 @@ Return JSON matching:
     }
     const content = fs.readFileSync(filePath, 'utf-8');
     res.json({ name: docName, content });
+  });
+
+  // Git & Backup routes
+  const BACKUP_PATH = path.join(DATA_DIR, 'backup-original-imported-state.tar.gz');
+
+  app.get('/api/backup/download', (_req, res) => {
+    if (!fs.existsSync(BACKUP_PATH)) {
+      return res.status(404).json({ error: 'Original backup archive not found' });
+    }
+    res.download(BACKUP_PATH, 'flowforge-ai-original-backup.tar.gz');
+  });
+
+  app.get('/api/git/status', (_req, res) => {
+    try {
+      const remoteUrl = execSync('git config --get remote.origin.url', { encoding: 'utf-8' }).trim();
+      const currentBranch = execSync('git rev-parse --abbrev-ref HEAD', { encoding: 'utf-8' }).trim();
+      const latestCommit = execSync('git log -1 --format="%h - %s"', { encoding: 'utf-8' }).trim();
+      const backupExists = fs.existsSync(BACKUP_PATH);
+
+      let backupBranchCommit = 'd6340f4';
+      try {
+        backupBranchCommit = execSync('git rev-parse --short backup/original-imported-state', { encoding: 'utf-8' }).trim();
+      } catch {
+        // fallback
+      }
+
+      const statusOutput = execSync('git status --short', { encoding: 'utf-8' }).trim();
+
+      res.json({
+        connected: true,
+        remoteUrl,
+        currentBranch,
+        latestCommit,
+        backupBranch: 'backup/original-imported-state',
+        backupCommit: backupBranchCommit,
+        backupFileAvailable: backupExists,
+        cleanWorkingTree: statusOutput.length === 0,
+        uncommittedChanges: statusOutput.length > 0 ? statusOutput.split('\n') : [],
+      });
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Git inspection error';
+      res.status(500).json({ connected: false, error: msg });
+    }
+  });
+
+  app.post('/api/git/sync', async (req, res) => {
+    const { githubToken, confirmOverwrite, pushBackup = true } = req.body;
+
+    if (!confirmOverwrite) {
+      return res.status(400).json({
+        ok: false,
+        error: 'Confirmation required: You must explicitly confirm before syncing to the main branch.',
+      });
+    }
+
+    if (!githubToken || typeof githubToken !== 'string' || !githubToken.trim()) {
+      return res.status(400).json({
+        ok: false,
+        error: 'A GitHub Personal Access Token (PAT) with "repo" scope is required for authorization.',
+      });
+    }
+
+    const token = githubToken.trim();
+    const repoSlug = 'bikkinagowtham/flowforge-ai.git';
+    const authRemoteUrl = `https://${token}@github.com/${repoSlug}`;
+
+    try {
+      let backupResult = 'Skipped';
+      if (pushBackup) {
+        // 1. Push the backup branch first to ensure the old state is preserved permanently on GitHub
+        try {
+          execSync(`git push ${authRemoteUrl} backup/original-imported-state:refs/heads/backup/original-imported-state --force`, {
+            stdio: 'pipe',
+          });
+          backupResult = 'Pushed branch "backup/original-imported-state" to GitHub';
+        } catch (bErr: unknown) {
+          const bMsg = bErr instanceof Error ? bErr.message : String(bErr);
+          console.warn('Backup branch push failed:', bMsg);
+          // If already exists or permission issue, continue
+        }
+      }
+
+      // 2. Push corrected code to main
+      execSync(`git push ${authRemoteUrl} main:refs/heads/main`, {
+        stdio: 'pipe',
+      });
+
+      logActivity(
+        'git-sync',
+        'GitHub Repository Synchronization',
+        'workflow_completed',
+        `Successfully synced corrected FlowForge AI full-stack code to https://github.com/bikkinagowtham/flowforge-ai (main branch).`,
+        'success'
+      );
+
+      return res.json({
+        ok: true,
+        message: 'Successfully synchronized corrected code to https://github.com/bikkinagowtham/flowforge-ai',
+        backupResult,
+        mainBranch: 'main',
+        commit: execSync('git rev-parse --short HEAD', { encoding: 'utf-8' }).trim(),
+      });
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Git push error';
+      return res.status(500).json({
+        ok: false,
+        error: `GitHub push failed: ${msg}. Verify your token has 'repo' write permissions.`,
+      });
+    }
   });
 
   // Serve Frontend / Vite

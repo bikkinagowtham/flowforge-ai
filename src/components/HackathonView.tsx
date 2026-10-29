@@ -10,6 +10,7 @@ import {
   Check,
   Copy,
 } from 'lucide-react';
+import { GitHubSyncCard } from './GitHubSyncCard';
 
 export const HackathonView: React.FC = () => {
   const [activeDoc, setActiveDoc] = useState<'DEMO_SCRIPT.md' | 'ARCHITECTURE.md' | 'SUBMISSION_CHECKLIST.md'>('DEMO_SCRIPT.md');
@@ -154,31 +155,8 @@ export const HackathonView: React.FC = () => {
         </div>
       </div>
 
-      {/* GitHub Repository Sync Guide */}
-      <div className="space-y-4 p-6 rounded-2xl bg-slate-900/40 border border-cyan-800/40">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <GitBranch className="w-5 h-5 text-cyan-400" />
-            <h3 className="text-base font-bold text-white">GitHub Synchronization Instructions</h3>
-          </div>
-          <span className="text-xs font-mono text-cyan-400 bg-cyan-950/60 px-2 py-0.5 rounded border border-cyan-800/60">
-            bikkinagowtham/flowforge-ai
-          </span>
-        </div>
-        <p className="text-xs text-slate-300 leading-relaxed">
-          The code has been verified and compiled with zero errors. When you are ready to update your GitHub repository with this corrected, working version, use the following commands:
-        </p>
-        <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 font-mono text-xs text-cyan-300 space-y-2">
-          <div className="text-slate-500"># 1. Check local status & verified files</div>
-          <div>git status</div>
-          <div className="text-slate-500 pt-2"># 2. Stage all corrected project files (secrets & node_modules protected by .gitignore)</div>
-          <div>git add .</div>
-          <div className="text-slate-500 pt-2"># 3. Commit the full-stack working implementation</div>
-          <div>git commit -m "fix: FlowForge AI working full-stack implementation with Nebius Token Factory & NVIDIA Nemotron"</div>
-          <div className="text-slate-500 pt-2"># 4. Push to update your repository</div>
-          <div>git push origin main</div>
-        </div>
-      </div>
+      {/* GitHub Repository Sync & Safety Card */}
+      <GitHubSyncCard />
     </div>
   );
 };

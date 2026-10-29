@@ -7,6 +7,7 @@ import { VerificationView } from './components/VerificationView';
 import { ActivityView } from './components/ActivityView';
 import { InfrastructureView } from './components/InfrastructureView';
 import { HackathonView } from './components/HackathonView';
+import { GitHubSyncCard } from './components/GitHubSyncCard';
 import type { Workflow, ActivityEvent, SystemStatus, ModelInfo } from './types/workflow';
 
 export default function App() {
@@ -281,6 +282,12 @@ export default function App() {
             availableModels={availableModels}
             onRefreshStatus={refreshStatus}
           />
+        )}
+
+        {currentTab === 'github' && (
+          <div className="max-w-4xl mx-auto space-y-6 pb-16">
+            <GitHubSyncCard />
+          </div>
         )}
 
         {currentTab === 'hackathon' && <HackathonView />}

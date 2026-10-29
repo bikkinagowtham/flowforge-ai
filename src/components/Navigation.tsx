@@ -9,6 +9,7 @@ import {
   Trophy,
   Activity,
   Terminal,
+  GitBranch,
 } from 'lucide-react';
 import type { SystemStatus } from '../types/workflow';
 
@@ -19,6 +20,7 @@ export type NavTab =
   | 'verification'
   | 'activity'
   | 'infrastructure'
+  | 'github'
   | 'hackathon';
 
 interface NavigationProps {
@@ -41,6 +43,7 @@ export const Navigation: React.FC<NavigationProps> = ({
     { id: 'verification', label: 'Verification Center', icon: CheckCircle2 },
     { id: 'activity', label: 'Audit Trail', icon: Clock },
     { id: 'infrastructure', label: 'Nebius & Models', icon: Cpu },
+    { id: 'github', label: 'GitHub Sync', icon: GitBranch },
     { id: 'hackathon', label: 'Hackathon Hub', icon: Trophy },
   ];
 
@@ -119,6 +122,19 @@ export const Navigation: React.FC<NavigationProps> = ({
             </span>
             <span className="sm:hidden">{isLive ? 'Live' : 'Demo'}</span>
           </div>
+
+          <button
+            onClick={() => onSelectTab('github')}
+            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-xs font-mono transition-all ${
+              currentTab === 'github'
+                ? 'bg-cyan-500/20 border-cyan-500/50 text-cyan-300'
+                : 'bg-slate-900 border-slate-800 text-slate-300 hover:border-cyan-800 hover:text-cyan-400'
+            }`}
+            title="GitHub Repository Sync & Backup Center"
+          >
+            <GitBranch className="w-3.5 h-3.5 text-cyan-400" />
+            <span className="hidden md:inline">GitHub Sync</span>
+          </button>
 
           <button
             onClick={() => onSelectTab('workspace')}

@@ -12,6 +12,7 @@ import {
   FileCheck,
   Search,
   ExternalLink,
+  GitBranch,
 } from 'lucide-react';
 import { ThreeHeroCanvas } from './ThreeHeroCanvas';
 import type { SystemStatus, Workflow } from '../types/workflow';
@@ -124,6 +125,14 @@ export const HomeView: React.FC<HomeViewProps> = ({
                 className="flex items-center gap-2 px-4 py-3 rounded-xl bg-slate-950 hover:bg-slate-900 text-slate-400 hover:text-slate-200 border border-slate-800 font-mono text-xs transition-all"
               >
                 <span>Track: Best Apps & Agents</span>
+              </button>
+
+              <button
+                onClick={() => onNavigate('github')}
+                className="flex items-center gap-1.5 px-4 py-3 rounded-xl bg-cyan-950/60 hover:bg-cyan-900/60 text-cyan-300 border border-cyan-800/60 font-semibold text-xs transition-all shadow-sm"
+              >
+                <GitBranch className="w-3.5 h-3.5 text-cyan-400" />
+                <span>GitHub Sync & Backup</span>
               </button>
             </div>
 
